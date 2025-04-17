@@ -1,0 +1,27 @@
+version: "3.0"
+services:
+  ##
+  ## asterisk 配置
+  ## 启动成功后页面：
+  ##
+  asterisk:
+    build:
+      context: ./build
+      dockerfile: Dockerfile
+    image: asterisk:alpine-18.15.1
+    container_name: asterisk
+    restart: always
+    network_mode: bridge
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "5060:5060/udp"                        # SIP UDP port
+      - "5060:5060"                            # SIP TCP port
+      - "5061:5061"                            # SIP TLS port
+      - "50570:50570/udp"                      # SIP UDP port
+      - "10000-10099:10000-10099/udp"          # RTP ports
+    volumes:
+      - ./config:/etc/asterisk
+      - /var/data/asterisk/log:/var/log/asterisk
+      - /var/data/asterisk/lib:/var/lib/asterisk
+      - /var/data/asterisk/spool:/var/spool/asterisk

@@ -1,0 +1,361 @@
+version: '3.1'
+services:
+  dky-gateway:
+    build:
+      context: ./dky/dky-gateway
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-gateway
+    container_name: dky-gateway
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-gateway -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./dky/dky-gateway/jar:/home/dky/dky-gateway/jar
+      - ./dky/dky-gateway/logs:/home/dky/dky-gateway/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-admin:
+    build:
+      context: ./dky/dky-admin
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-admin
+    container_name: dky-admin
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-admin -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8300:8300'
+    volumes:
+      - ./dky/dky-admin/jar:/home/dky/dky-admin/jar
+      - ./dky/dky-admin/logs:/home/dky/dky-admin/logs
+      - /home/freeswitch:/home/freeswitch
+      - /etc/freeswitch:/etc/freeswitch
+      - /home/dky/agent:/home/dky/agent
+  dky-task:
+    build:
+      context: ./dky/dky-task
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-task
+    container_name: dky-task
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-task -Drocketmq.client.logLevel=OFF
+    ports:
+      - '7200:7200'
+      - '7300:7300'
+    volumes:
+      - ./dky/dky-task/jar:/home/dky/dky-task/jar
+      - ./dky/dky-task/logs:/home/dky/dky-task/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-cdr:
+    build:
+      context: ./dky/dky-cdr
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-cdr
+    container_name: dky-cdr
+    ports:
+      - '8500:8500'
+    volumes:
+      - ./dky/dky-cdr/jar:/home/dky/dky-cdr/jar
+      - ./dky/dky-cdr/logs:/home/dky/dky-cdr/logs
+      - ./dky/dky-cdr/cdr-log:/home/dky/dky-cdr/cdr-log
+      - ./dky/dky-cdr/cdr-error-log:/home/dky/dky-cdr/cdr-error-log
+      - /home/dky/agent:/home/dky/agent
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-cdr -Drocketmq.client.logLevel=OFF
+  dky-cdr-handle:
+    build:
+      context: ./dky/dky-cdr-handle
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-cdr-handle
+    container_name: dky-cdr-handle
+    ports:
+      - '8510:8510'
+    volumes:
+      - ./dky/dky-cdr-handle/jar:/home/dky/dky-cdr-handle/jar
+      - ./dky/dky-cdr-handle/logs:/home/dky/dky-cdr-handle/logs
+      - /home/dky/agent:/home/dky/agent
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-cdr-handle -Drocketmq.client.logLevel=OFF
+  dky-dial-resource:
+    build:
+      context: ./dky/dky-dial-resource
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-dial-resource
+    container_name: dky-dial-resource
+    environment:
+      JAVA_OPTS: >
+        -Xmx512m 
+        -Dserver.port=8600
+        -Dspring.cloud.nacos.discovery.ip=192.168.0.10
+        -javaagent:/home/dky/agent/skywalking-agent.jar 
+        -DSW_AGENT_NAME=cc-dev::dky-dial-resource
+        -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8600:8600'
+    volumes:
+      - ./dky/dky-dial-resource/jar:/home/dky/dky-dial-resource/jar
+      - ./dky/dky-dial-resource/logs:/home/dky/dky-dial-resource/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-cdr-producer:
+    build:
+      context: ./dky/dky-cdr-producer
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-cdr-producer
+    container_name: dky-cdr-producer
+    ports:
+      - '5201:5201'
+    volumes:
+      - ./dky/dky-cdr-producer/jar:/home/dky/dky-cdr-producer/jar
+      - ./dky/dky-cdr-producer/logs:/home/dky/dky-cdr-producer/logs
+      - /home/dky/agent:/home/dky/agent
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-cdr-producer -Drocketmq.client.logLevel=OFF
+  dky-push-consumer:
+    build:
+      context: ./dky/dky-push-consumer
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-push-consumer
+    container_name: dky-push-consumer
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-push-consumer -Drocketmq.client.logLevel=OFF
+    ports:
+      - '5301:5301'
+    volumes:
+      - ./dky/dky-push-consumer/jar:/home/dky/dky-push-consumer/jar
+      - ./dky/dky-push-consumer/logs:/home/dky/dky-push-consumer/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-ws-sdk-1:
+    build:
+      context: ./dky/dky-ws-sdk-1
+      dockerfile: Dockerfile
+    image: dky/dky-ws-sdk:1.0.0
+    container_name: dky-ws-sdk-1
+    restart: always
+    environment:
+      JAVA_OPTS: >
+        -Xmx512m 
+        -DPID=1
+        -Dserver.port=8111
+        -Dspring.cloud.nacos.discovery.ip=192.168.0.10
+        -javaagent:/home/dky/agent/skywalking-agent.jar 
+        -DSW_AGENT_NAME=cc-dev::dky-ws-adk-1
+        -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8111:8111'
+    volumes:
+      - /home/dky/dky-ws-sdk/logs:/home/dky/dky-ws-sdk/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-ws-sdk-2:
+    build:
+      context: ./dky/dky-ws-sdk-2
+      dockerfile: Dockerfile
+    image: dky/dky-ws-sdk:1.0.0
+    container_name: dky-ws-sdk-2
+    restart: always
+    environment:
+      JAVA_OPTS: >
+        -Xmx512m 
+        -DPID=2
+        -Dserver.port=8112
+        -Dspring.cloud.nacos.discovery.ip=192.168.0.10
+        -javaagent:/home/dky/agent/skywalking-agent.jar 
+        -DSW_AGENT_NAME=cc-dev::dky-ws-sdk-2
+        -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8112:8112'
+    volumes:
+      - /home/dky/dky-ws-sdk/logs:/home/dky/dky-ws-sdk/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-event-producer:
+    build:
+      context: ./dky/dky-event-producer
+      dockerfile: Dockerfile
+    image: dky/dky-event-producer:1.0.0
+    container_name: dky-event-producer
+    restart: always
+    environment:
+      JAVA_OPTS: >
+        -Xmx512m 
+        -Dserver.port=5102
+        -Dspring.cloud.nacos.discovery.ip=192.168.0.10
+        -javaagent:/home/dky/agent/skywalking-agent.jar 
+        -DSW_AGENT_NAME=cc-dev::dky-event-producer
+        -Drocketmq.client.logLevel=OFF
+    ports:
+      - '5102:5102'
+    volumes:
+      - /home/dky/dky-event-producer/logs:/home/dky/dky-event-producer/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-event-consumer:
+    build:
+      context: ./dky/dky-event-consumer
+      dockerfile: Dockerfile
+    image: dky/dky-event-consumer:1.0.0
+    container_name: dky-event-consumer
+    restart: always
+    environment:
+      JAVA_OPTS: >
+        -Xmx512m 
+        -Dserver.port=5151
+        -Dspring.cloud.nacos.discovery.ip=192.168.0.10
+        -javaagent:/home/dky/agent/skywalking-agent.jar 
+        -DSW_AGENT_NAME=cc-dev::dky-event-consumer
+        -Drocketmq.client.logLevel=OFF
+    ports:
+      - '5151:5151'
+    volumes:
+      - /home/dky/dky-event-consumer/logs:/home/dky/dky-event-consumer/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-open-api:
+    build:
+      context: ./dky/dky-open-api
+      dockerfile: Dockerfile
+    image: dky-open-api
+    container_name: dky-open-api
+    restart: always
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dserver.port=8091 -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-open-api -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8091:8091'
+    volumes:
+      - /home/dky/dky-open-api/logs:/home/dky/dky-open-api/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-big-queue:
+    build:
+      context: ./dky/dky-big-queue
+      dockerfile: Dockerfile
+    image: dky/dky-big-queue:1.0.0
+    container_name: dky-big-queue
+    restart: always
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dserver.port=6001 -Dprocess.id=21 -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-big-queue  -Drocketmq.client.logLevel=OFF
+    ports:
+      - '6001:6001'
+    volumes:
+      - /home/dky/dky-big-queue/logs:/home/dky/dky-big-queue/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-inner-api:
+    build:
+      context: ./dky/dky-inner-api
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-inner-api
+    container_name: dky-inner-api
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-inner-api -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8400:8400'
+    volumes:
+      - ./dky/dky-inner-api/jar:/home/dky/dky-inner-api/jar
+      - ./dky/dky-inner-api/logs:/home/dky/dky-inner-api/logs
+      - /home/freeswitch:/home/freeswitch
+      - /home/dky/agent:/home/dky/agent
+  dky-precall:
+    build:
+      context: ./dky/dky-precall
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-precall
+    container_name: dky-precall
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-precall -Drocketmq.client.logLevel=OFF
+    ports:
+      - '9100:9100'
+    volumes:
+      - ./dky/dky-precall/logs:/home/dky/dky-precall/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-server-resource:
+    build:
+      context: ./dky/dky-server-resource
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-server-resource
+    container_name: dky-server-resource
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-server-resource -Drocketmq.client.logLevel=OFF
+    ports:
+      - '5001:5001'
+      - '5011:5011'
+    volumes:
+      - ./dky/dky-server-resource/jar:/home/dky/dky-server-resource/jar
+      - ./dky/dky-server-resource/logs:/home/dky/dky-server-resource/logs
+      - /home/freeswitch:/home/freeswitch
+      - /home/dky/agent:/home/dky/agent
+  dky-callback:
+    build:
+      context: ./dky/dky-callback
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-callback
+    container_name: dky-callback
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-callback -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8092:8092'
+    volumes:
+      - ./dky/dky-callback/jar:/home/dky/dky-callback/jar
+      - ./dky/dky-callback/logs:/home/dky/dky-callback/logs
+      - /home/dky/agent:/home/dky/agent
+  dky-mq-forwarder:
+    build:
+      context: ./dky/dky-mq-forwarder
+      dockerfile: Dockerfile
+    restart: always
+    image: dky-mq-forwarder
+    container_name: dky-mq-forwarder
+    ports:
+      - '9200:9200'
+    volumes:
+      - ./dky/dky-mq-forwarder/jar:/home/dky/dky-mq-forwarder/jar
+      - ./dky/dky-mq-forwarder/logs:/home/dky/dky-mq-forwarder/logs
+      - /home/dky/agent:/home/dky/agent
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-mq-forwarder -Drocketmq.client.logLevel=OFF
+  dky-ws-rasr:
+    build:
+      context: ./dky/dky-ws-rasr
+      dockerfile: Dockerfile
+    image: dky/dky-ws-rasr:1.0.0
+    container_name: dky-ws-rasr
+    restart: always
+    environment:
+      JAVA_OPTS: >
+        -Xmx512m 
+        -Dserver.port=8201
+        -Dspring.cloud.nacos.discovery.ip=192.168.0.10
+        -javaagent:/home/dky/agent/skywalking-agent.jar 
+        -DSW_AGENT_NAME=cc-dev::dky-ws-rasr
+        -Drocketmq.client.logLevel=OFF
+    ports:
+      - '8201:8201'
+      - '3000:3000'
+    volumes:
+      - /home/dky/dky-ws-rasr/logs:/home/dky/dky-ws-rasr/logs
+      - /home/dky/dky-ws-rasr/data:/home/dky/dky-ws-rasr/data
+      - /home/dky/agent:/home/dky/agent
+  dky-call-test:
+    build:
+      context: ./dky/dky-call-test
+      dockerfile: Dockerfile
+    restart: on-failure:5
+    image: dky-call-test
+    container_name: dky-call-test
+    environment:
+      - JAVA_OPTS=-Xmx512m -Dspring.cloud.nacos.discovery.ip=192.168.0.10 -javaagent:/home/dky/agent/skywalking-agent.jar -DSW_AGENT_NAME=cc-dev::dky-call-test -Drocketmq.client.logLevel=OFF
+    ports:
+      - '5251:5251'
+    volumes:
+      - ./dky/dky-call-test/logs:/home/dky/dky-call-test/logs
+      - /home/dky/agent:/home/dky/agent

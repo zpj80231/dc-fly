@@ -1,0 +1,23 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['192.168.1.18:9090']
+  - job_name: 'cadvisor'
+    static_configs:
+    - targets: ['192.168.1.18:8899']
+  - job_name: 'node'
+    static_configs:
+    - targets: ['192.168.1.18:9101']
+  - job_name: 'dky-event-consumer-1'
+    # 多久采集一次数据
+    scrape_interval: 15s
+    # 采集时的超时时间
+    scrape_timeout: 10s
+    # 采集的路径是啥
+    metrics_path: '/actuator/prometheus'
+    # 采集服务的地址，设置成 Spring Boot 应用所在服务器的具体地址
+    static_configs:
+    - targets: ['192.168.0.10:5161']

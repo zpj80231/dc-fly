@@ -1,0 +1,19 @@
+version: "3.0"
+services:
+  ##
+  ## qinglong 配置
+  ## 启动成功后页面：http://localhost:5700
+  ##
+  qinglong:
+    # alpine 基础镜像版本
+    image: whyour/qinglong:latest
+    container_name: qinglong
+    restart: unless-stopped
+    volumes:
+      - /var/data/qinglong:/ql/data
+    ports:
+      - "5700:5700"
+    environment:
+      # 部署路径非必须，以斜杠开头和结尾，比如 /test/
+      QlBaseUrl: '/'
+

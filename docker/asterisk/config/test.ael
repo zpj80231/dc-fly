@@ -1,0 +1,159 @@
+context ttest {
+	_x. => {
+		NoOp(context is : ${CONTEXT}, and EXTEN is :${EXTEN});
+		NoOp(channel name is ${CHANNEL});
+		Set(var1=${CHANNEL});
+		Set(postfix=${CUT(var1,/,2)});
+		Ringing(1);
+		Wait(1);
+		Answer;
+		//Playback(https://cc20temp.obs.cn-north-4.myhuaweicloud.com:443/test/0/01711617425527.wav);
+		//Playback(http://192.168.0.133:8099/tttt/happylover.wav);
+		//StartMusicOnHold(01710741627163);
+		//StartMusicOnHold(01711022255483);
+		//Wait(30);
+		NoOp(the EPOCH is: ${EPOCH});
+		NoOp(the STRFTIME(,,%s.%3q) is: ${STRFTIME(,,"%s.%3q)});
+		Set(startPlayTime=${STRFTIME(,,"%s.%3q)});
+		//Playback(default_001);
+		Set(PJSIP_HEADER(add,X-LINKEDID)=${CHANNEL(uniqueid)});
+		Set(PJSIP_HEADER(add,X-accountcode)=88888888888);
+		Set(PJSIP_HEADER(add,X-sourceIp)=1.1.1.1);
+		
+		Dial(PJSIP/gateway/sip:${EXTEN}@192.168.0.133:50571,60,tTg);
+		Set(endPlayTime=${STRFTIME(,,"%s.%3q)});
+		Set(duration=${MATH(${endPlayTime} - ${startPlayTime},f)});
+		Hangup();
+	}
+	_6x. => {
+		NoOp(context is : ${CONTEXT}, and EXTEN is :${EXTEN});
+		NoOp(channel name is ${CHANNEL});
+		Set(var1=${CHANNEL});
+		Set(CHANNEL(language)=cn);
+		Ringing(1);
+		Wait(1);
+		Answer;
+		Echo();
+		Playback(beep);
+		//AudioFork(ws://localhost:8090/out,D(out));
+		//Playback(http://192.168.0.133:8099/tttt/happylover.wav);
+		CALLERID(all)=09918142553;
+                telDest=9100918911610325;
+                //Set(destIPaddr=192.168.0.133:32761);
+                Set(destIPaddr=192.168.0.59:32760);
+                Set(destIPaddr=192.168.0.246:32760);
+                Set(destIPaddr=192.168.0.32:50575);
+                Dial(PJSIP/gateway/sip:${telDest}@${destIPaddr},60,50,tT);
+		Hangup();
+	}
+
+	_7x. => {
+		NoOp(context is : ${CONTEXT}, and EXTEN is :${EXTEN});
+		NoOp(channel name is ${CHANNEL});
+		Set(var1=${CHANNEL});
+		//Set(BASE_XBOT_URL=http://192.168.0.133:8099/xbot/xbot0);
+		Set(postfix=${CUT(var1,/,2)});
+		Ringing(1);
+		Wait(1);
+		Answer;
+		
+		//StopMixMonitor();
+        //MixMonitor(${recordFileName}.wav,${option});
+		Dial(PJSIP/${EXTEN},20);
+		
+		//Playback("https://cc20temp.obs.cn-north-4.myhuaweicloud.com:443/sound/0/01710741627163.wav");
+		
+		//AudioFork(wss://127.0.0.1:8001/ws,R(10)r(5));
+		//AudioFork(ws://cc2webdev.diankongcloud.cn/gw2/ws/rasr?linkedId=${UNIQUEID},R(10)r(5));
+		//AudioSocket(40325ec2-5efd-4bd3-805f-53576e581d13,127.0.0.1:1121);
+		//Playback(default_001);
+		//AGI(bakcup_20240604_psock.py);
+		
+		Hangup();
+	}
+
+
+	_8x. => {
+		NoOp(context is : ${CONTEXT}, and EXTEN is :${EXTEN} , and linkedid is : ${UNIQUEID});
+		NoOp(channel name is ${CHANNEL});
+		Set(var1=${CHANNEL});
+		//Set(BASE_XBOT_URL=http://192.168.0.133:8099/xbot/xbot0);
+		Set(postfix=${CUT(var1,/,2)});
+		Ringing(1);
+		Wait(1);
+		Answer;
+//		Playback("https://cc20temp.obs.cn-north-4.myhuaweicloud.com:443/sound/0/01710741627163.wav");
+		Playback(转接中);
+		
+		SayAlpha("a b c d e f g");
+		
+		Set(appid=3);
+		Set(projectId=2222);
+		//EAGI(trans.agi,cn-ZH,2);
+		Set(VOLUME(RX)=4);
+		Set(AGISIGHUP=no);
+		Set(current_time=${STRFTIME(${EPOCH},,%Y%m%d%H%M)});
+		Set(uuid="40325ec2-5efd-4bd3-805f-${current_time}");
+		//AudioSocket(40325ec2-5efd-4bd3-805f-53576e581d13,192.168.0.50:1121);
+		//MixMonitor(${uuid}.wav,${option});
+		//Monitor(wav,${uuid},${option});
+		
+		//Set(VOLUME(RX)=2);
+        //Set(VOLUME(TX)=2);
+        //Dial("AudioSocket/192.168.1.141:3000/${uuid}",30,gRTtd);
+		AudioSocket(${uuid},192.168.1.85:3000);
+		
+		//AGI(agi://127.0.0.1:4573/aibot);
+		//AGI(pystrix_agi.py);
+		//AGI(agi://127.0.0.1:4574/psock.py);
+		StopMonitor();
+		StopMixMonitor();
+		Hangup();
+	}
+	_9X. => {
+		NoOp(context is : ${CONTEXT}, and EXTEN is :${EXTEN}, test for mrcp);
+		Set(BASE_XBOT_URL=http://192.168.0.133:8099/xbot/xbot0);
+		Ringing(1);
+		Answer;
+		Playback(beep);
+		//MRCPRecog(/etc/asterisk/dg3.grxml,f=${${cur_node}_recognize_voice_file}y&t=5000&b=1&ct=0.7);
+		//--MRCPRecog(builtin:grammar/number,p=default&t=5000&b=1&ct=0.7);
+		//MRCPRecog(builtin:grammar/number,p=default&f=help-${CHANNEL}&t=5000&b=1&ct=0.7);
+		//-en,SynthAndRecog(Please say a number,builtin:grammar/number,t=5000&b=1&ct=0.7&spl=en-US);
+		//SynthAndRecog(请说一个数字,builtin:grammar/number,t=5000&b=1&ct=0.7&spl=cn-ZH);
+		Set(after_action=);
+		Set(say_text="请问你要了解哪里的天气");
+		Set(index=1);
+		while(1){
+			SynthAndRecog(${say_text},builtin:grammar/number,t=5000&b=1&ct=0.7&spl=cn-ZH);
+			//MRCPRecog(builtin:grammar/number,p=default&t=5000&b=1&ct=0.7&spl=cn-ZH&f=hello-world);
+			NoOp(RECOGSTATUS=${RECOGSTATUS});
+			NoOp(RECOG_COMPLETION_CAUSE=${RECOG_COMPLETION_CAUSE});
+			NoOp(RECOG_RESULT=${RECOG_RESULT});
+			Verbose(1, ${RECOGSTATUS}, ${RECOG_COMPLETION_CAUSE}, ${RECOG_RESULT});
+			//Mset(CURLOPT(dnstimeout)=5,CURLOPT(conntimeout)=5,CURLOPT(httptimeout)=5,CURLOPT(httpheader)="Content-Type: application/json");
+			Mset(CURLOPT(dnstimeout)=5,CURLOPT(conntimeout)=5,CURLOPT(httptimeout)=5");
+			NoOP(URL IS : ${BASE_XBOT_URL}${index});
+			Set(tmpres=${CURL(${BASE_XBOT_URL}${index},${testaa})});
+			Mset(${tmpres});
+			NoOp(say_text is : ${say_text} , and the before_action is : ${before_action},and the after_action is : ${after_action});
+			NoOp(tempres is :${tempres});
+			if("${after_action}" == "hangup"){
+				ExitWhile();
+			}else{
+				index=${index}+1;
+			}
+		}
+		Hangup();
+	}
+	h => {
+		NoOP(hangup the call );
+		NoOp(hangupcause is : ${HANGUPCAUSE});
+	}
+}
+
+
+macro auin() {
+	AudioFork(ws://localhost:8090/in,D(out));
+}
+

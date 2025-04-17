@@ -1,0 +1,19 @@
+version: "3.0"
+services:
+  ## 
+  ## mysql 配置
+  ## sudo chmod -R 777 /var/data
+  ##
+  mysql:
+    image: mysql:8.4.5
+    container_name: mysql8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+    ports:
+      - "3306:3306"
+    volumes:
+#      - /var/data/mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - /etc/localtime:/etc/localtime:ro
+      - /var/data/mysql/data:/var/lib/mysql
+      - /var/data/mysql/logs:/var/log/mysql

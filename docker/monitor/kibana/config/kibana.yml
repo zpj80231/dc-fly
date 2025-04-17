@@ -1,0 +1,9 @@
+server.host: "0.0.0.0"
+monitoring.ui.container.elasticsearch.enabled: true
+elasticsearch.hosts: ["http://127.0.0.1:9200"]
+#elasticsearch.username: elastic
+#elasticsearch.password: '123456'
+# 注意：参数值至少32位，否则启动会报错提示
+#xpack.encryptedSavedObjects.encryptionKey: encryptedSavedObjects12345678909876543210
+#xpack.security.encryptionKey: encryptionKeysecurity12345678909876543210
+#xpack.reporting.encryptionKey: encryptionKeyreporting12345678909876543210

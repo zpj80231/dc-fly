@@ -1,0 +1,31 @@
+## 
+## 1.解决mac宿主机跟容器网络不通的问题：
+## 
+## 适用于 Windows 和 Mac 的 Docker Desktop 18.03+ 支持 host.docker.internal 作为 localhost 的功能别名。在您的容器中使用此字符串来访问您的主机。
+## 
+## localhost 和 127.0.0.1 – 这些解析为容器。
+## host.docker.internal – 这解析为外部主机。
+## 
+version: "3.0"
+services:
+  ##
+  ## rabbitmq 配置
+  ## 启动成功后页面：http://localhost:15672/
+  ##
+  rabbitmq:
+    image: rabbitmq:4.1.0-management
+    container_name: rabbitmq4
+    hostname: rabbitmq_localdev
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - TZ=Asia/Shanghai
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - /var/data/rabbitmq/data/:/var/lib/rabbitmq/
+networks:
+  rocketmq:
+    driver: bridge

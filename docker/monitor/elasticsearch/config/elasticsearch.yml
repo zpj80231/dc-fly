@@ -1,0 +1,6 @@
+network.host: 0.0.0.0
+http.port: 9200
+# 开启es跨域
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-headers: Content-Type,Accept,Authorization, x-requested-with

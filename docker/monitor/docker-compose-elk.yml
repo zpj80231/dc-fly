@@ -1,0 +1,107 @@
+## 
+## 1.解决mac宿主机跟容器网络不通的问题：
+## 
+## 适用于 Windows 和 Mac 的 Docker Desktop 18.03+ 支持 host.docker.internal 作为 localhost 的功能别名。在您的容器中使用此字符串来访问您的主机。
+## 
+## localhost 和 127.0.0.1 – 这些解析为容器。
+## host.docker.internal – 这解析为外部主机。
+## 
+version: "3.0"
+services:
+  ##
+  ## elasticsearch 配置
+  ## 启动成功后页面：http://localhost:9200/
+  ##
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.16
+    container_name: elasticsearch
+    privileged: true
+    user: root
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+      #设置集群名称为elasticsearch
+      - cluster.name=elasticsearch 
+      #以单一节点模式启动
+      - discovery.type=single-node 
+      #设置使用jvm内存大小
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m  
+      - xpack.security.enabled=false # 添加此项以禁用X-Pack验证
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins
+      - /var/data/elasticsearch/data:/usr/share/elasticsearch/data
+      - /var/data/elasticsearch/logs:/usr/share/elasticsearch/logs
+    ports:
+      - 9200:9200
+      - 9300:9300
+  ##
+  ## elasticsearch-head 配置
+  ## 启动成功后页面：http://localhost:9100/
+  ##
+  elasticsearch-head:
+    image: mobz/elasticsearch-head:5
+    container_name: elasticsearch-head
+    restart: always
+    ports:
+      - "9100:9100"
+    environment:
+      - TZ=Asia/Shanghai
+      - "elasticsearch_HOSTS=http://elasticsearch:9200"
+    volumes:
+      - ./elasticsearch/head/vendor.js:/usr/src/app/_site/vendor.js
+    depends_on:
+      - elasticsearch
+    links:
+      #可以用elasticsearch这个域名访问elasticsearch服务
+      - elasticsearch:elasticsearch
+  ##
+  ## logstash 配置
+  ## 启动成功后页面：
+  ##
+  logstash:
+    image: logstash:7.17.16
+    container_name: logstash
+    ports:
+      - 4560:4560
+    privileged: true
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+      - xpack.security.enabled=false # 添加此项以禁用X-Pack验证
+    volumes:
+      #挂载logstash的配置文件
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+    depends_on:
+      - elasticsearch
+    links:
+      #可以用elasticsearch这个域名访问elasticsearch服务
+      - elasticsearch:elasticsearch
+  ##
+  ## kibana 配置
+  ## 启动成功后页面：http://localhost:5601/app/home#/
+  ##
+  kibana:
+    image: kibana:7.17.16
+    container_name: kibana
+    ports:
+      - 5601:5601
+    privileged: true
+    restart: always
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    links:
+      #可以用elasticsearch这个域名访问elasticsearch服务
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch 
+    environment:
+      #设置访问elasticsearch的地址
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - I18N_LOCALE=zh-CN
+      - TZ=Asia/Shanghai
+networks:
+  rocketmq:
+    driver: bridge

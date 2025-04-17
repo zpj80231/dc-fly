@@ -1,0 +1,23 @@
+version: "3.0"
+services:
+  ## 
+  ## nginx 配置
+  ## 启动成功后页面：http://localhost/
+  ##
+  nginx:
+    build:
+      context: nginx/build
+      dockerfile: nginx/build/Dockerfile
+    image: nginx                  # 镜像名称
+    container_name: nginx         # 容器名字
+    restart: always               # 开机自动重启
+    stdin_open: true
+    tty: true
+    ports:                        # 端口号绑定（宿主机:容器内）
+      - '80:80'
+      - '443:443'
+    volumes:                      # 目录映射（宿主机:容器内）
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - /var/data/nginx/log:/var/log/nginx
+      - /var/data/nginx/html/:/etc/nginx/html/
+

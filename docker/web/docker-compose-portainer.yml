@@ -1,0 +1,21 @@
+version: "3.0"
+services:
+  ##
+  ## portainer 配置
+  ## 启动成功后页面：http://localhost:9000/#!/2/docker/dashboard
+  ##
+  portainer:
+    build:
+      context: ~/docker/portainer/build
+      dockerfile: Dockerfile
+    image: portainer
+    container_name: portainer
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      #- ${HOME}/.orbstack/run/docker.sock:/var/run/docker.sock
+
