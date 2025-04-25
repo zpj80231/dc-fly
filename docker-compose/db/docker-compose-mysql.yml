@@ -7,13 +7,14 @@ services:
   mysql:
     image: mysql:8.4.5
     container_name: mysql8
-    restart: always
+    restart: unless-stopped   # 指定容器退出后的重启策略为始终重启，但是不考虑在Docker守护进程启动时就已经停止了的容器
     environment:
+      TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: 12345678
     ports:
       - "3306:3306"
     volumes:
-#      - /var/data/mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - /var/data/mysql/conf/my.cnf:/etc/mysql/my.cnf
       - /etc/localtime:/etc/localtime:ro
       - /var/data/mysql/data:/var/lib/mysql
       - /var/data/mysql/logs:/var/log/mysql
