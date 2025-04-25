@@ -14,8 +14,7 @@ services:
   ##
   xxl-job-admin:
     restart: always
-    network_mode: bridge
-    image: xuxueli/xxl-job-admin:2.4.0
+    image: xuxueli/xxl-job-admin:2.4.1
     container_name: xxl-job-admin
     volumes:
         - /var/data/xxl-job/logs:/data/applogs
@@ -35,7 +34,4 @@ services:
       --spring.mail.from=test_mail@qq.com
       --spring.mail.password=password123456
       --spring.mail.propertielasticsearch.mail.smtp.starttls.enable=true
-      --spring.mail.propertielasticsearch.mail.smtp.starttls.required=true'   
-networks:
-  rocketmq:
-    driver: bridge
+      --spring.mail.propertielasticsearch.mail.smtp.starttls.required=true'
