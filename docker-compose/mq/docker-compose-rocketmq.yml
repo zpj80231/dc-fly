@@ -7,24 +7,29 @@
 ## host.docker.internal – 这解析为外部主机。
 ## 
 version: "3.0"
+
+networks:
+  rocketmq:
+    driver: bridge
+
 services:
   ##
   ## rocketmq-server 配置
   ## 启动成功后页面：
   ##
   rocketmq-server:
-    image: apache/rocketmq:4.9.4
+    image: apache/rocketmq:5.1.3
     container_name: rocketmq-server
     restart: always
-    ports:
-      - 9876:9876
     environment:
-      JAVA_OPT: -server -Xms512m -Xmx512m
+      JAVA_OPT_EXT: -Duser.home=/home/rocketmq -server -Xms256M -Xmx256M -Xmn128m
       TZ: Asia/Shanghai
       RABBITMQ_VM_MEMORY_HIGH_WATERMARK: 2GB
     command: sh mqnamesrv -n "127.0.0.1:9876"
+    ports:
+      - 9876:9876
     volumes:
-      - /var/data/rocketmq/server/logs:/home/rocketmq/logs/rocketmqlogs
+      - /var/data/rocketmq/server/logs:/home/rocketmq/logs
     networks:
       rocketmq:
         aliases:
@@ -34,20 +39,20 @@ services:
   ## 启动成功后页面：
   ##
   rocketmq-broker:
-    image: apache/rocketmq:4.9.4
+    image: apache/rocketmq:5.1.3
     container_name: rocketmq-broker
     restart: always
+    environment:
+      NAMESRV_ADDR: rocketmq-server:9876
+      JAVA_OPT_EXT: -Duser.home=/home/rocketmq -server -Xms128m -Xmx128m -Xmn128m
+      TZ: Asia/Shanghai
+    command: ["sh","mqbroker","-c","/home/rocketmq/broker.conf","autoCreateTopicEnable=true"]
     ports:
       - 10909:10909
       - 10911:10911
-    environment:
-      - NAMelasticsearchRV_ADDR=rocketmq-server:9876
-      - JAVA_OPT_EXT=-server -Xms512M -Xmx512M -Xmn256m
-      - TZ=Asia/Shanghai
-    command: sh mqbroker -n rocketmq-server:9876 -c /home/rocketmq/rocketmq-4.9.4/conf/broker.conf
     volumes:
-      - ./rocketmq/broker/conf/broker.conf:/home/rocketmq/rocketmq-4.9.4/conf/broker.con
-      - /var/data/rocketmq/broker/logs:/home/rocketmq/logs/rocketmqlogs
+      - ./rocketmq/broker/conf/broker.conf:/home/rocketmq/broker.conf
+      - /var/data/rocketmq/broker/logs:/home/rocketmq/logs
       - /var/data/rocketmq/broker/store:/home/rocketmq/store
     depends_on:
       - rocketmq-server
@@ -65,11 +70,11 @@ services:
     image: apacherocketmq/rocketmq-dashboard
     container_name: rocketmq-console
     restart: always
-    ports:
-      - 8080:8080
     environment:
       TZ: Asia/Shanghai
-      JAVA_OPTS: "-Drocketmq.namesrv.addr=rocketmq-server:9876 -Dcom.rocketmq.sendMelasticsearchsageWithVIPChannel=true"
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=rocketmq-server:9876 -Dcom.rocketmq.sendMelasticsearchsageWithVIPChannel=false"
+    ports:
+      - 8080:8080
     depends_on:
       - rocketmq-server
     links:
@@ -78,6 +83,3 @@ services:
       rocketmq:
         aliases:
           - rocketmq-console
-networks:
-  rocketmq:
-    driver: bridge

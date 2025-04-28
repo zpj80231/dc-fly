@@ -26,6 +26,3 @@ services:
       - 15672:15672
     volumes:
       - /var/data/rabbitmq/data/:/var/lib/rabbitmq/
-networks:
-  rocketmq:
-    driver: bridge
