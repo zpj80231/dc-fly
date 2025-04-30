@@ -7,6 +7,11 @@
 ## host.docker.internal – 这解析为外部主机。
 ## 
 version: "3.0"
+
+networks:
+  monitor:
+    driver: bridge
+
 services:
   ##
   ## elasticsearch 配置
@@ -102,6 +107,3 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - I18N_LOCALE=zh-CN
       - TZ=Asia/Shanghai
-networks:
-  rocketmq:
-    driver: bridge
