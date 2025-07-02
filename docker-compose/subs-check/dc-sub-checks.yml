@@ -1,0 +1,23 @@
+version: "3.0"
+services:
+  ## 
+  ## 启动成功后页面：http://localhost:8199/admin
+  ## Surge：http://127.0.0.1:8299/download/sub?target=Surge
+  ##
+  subs-check:
+    image: ghcr.io/beck-8/subs-check:latest
+    container_name: subs-check
+    volumes:
+      - /var/data/subs-check/config:/app/config
+      - /var/data/subs-check/output:/app/output
+    ports:
+      - "8299:8299"
+      - "8199:8199"
+    environment:
+      - TZ=Asia/Shanghai
+      - API_KEY=111
+      # - HTTP_PROXY=http://192.168.1.1:7890
+      # - HTTPS_PROXY=http://192.168.1.1:7890
+    restart: always
+    network_mode: bridge
+
