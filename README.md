@@ -4,7 +4,7 @@
 
 ## 开源镜像站
 
-- 阿里云镜像：https://developer.aliyun.com/mirror/?serviceType=mirror
+- 阿里云镜像：https://developer.aliyun.com/mirror
 
 - 华为云镜像：https://mirrors.huaweicloud.com/home
 
