@@ -5,8 +5,12 @@
 ## 开源镜像站
 
 - 阿里云镜像：https://developer.aliyun.com/mirror
-
 - 华为云镜像：https://mirrors.huaweicloud.com/home
+
+## 加速站
+
+- Github 加速：https://ghproxy.link/
+- Github 加速：https://gh-proxy.com/
 
 ## 一键安装脚本
 
