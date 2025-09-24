@@ -51,7 +51,7 @@ services:
       - 10909:10909
       - 10911:10911
     volumes:
-      - ./rocketmq/broker/conf/broker.conf:/home/rocketmq/broker.conf
+      - ./broker/conf/broker.conf:/home/rocketmq/broker.conf
       - /var/data/rocketmq/broker/logs:/home/rocketmq/logs
       - /var/data/rocketmq/broker/store:/home/rocketmq/store
     depends_on:

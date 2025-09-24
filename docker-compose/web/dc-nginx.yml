@@ -5,9 +5,6 @@ services:
   ## 启动成功后页面：http://localhost/
   ##
   nginx:
-    build:
-      context: nginx/build
-      dockerfile: nginx/build/Dockerfile
     image: nginx                  # 镜像名称
     container_name: nginx         # 容器名字
     restart: always               # 开机自动重启

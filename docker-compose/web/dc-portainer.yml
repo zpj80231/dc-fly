@@ -5,10 +5,7 @@ services:
   ## 启动成功后页面：http://localhost:9000/#!/2/docker/dashboard
   ##
   portainer:
-    build:
-      context: ~/docker/portainer/build
-      dockerfile: Dockerfile
-    image: portainer
+    image: 6053537/portainer-ce
     container_name: portainer
     restart: always
     environment:
