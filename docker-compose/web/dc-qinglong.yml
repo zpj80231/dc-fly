@@ -2,7 +2,7 @@ version: "3.0"
 services:
   ##
   ## qinglong 配置
-  ## 启动成功后页面：http://localhost:15700
+  ## 启动成功后页面：http://localhost:15700/qinglong/login
   ##
   qinglong:
     # image: whyour/qinglong:2.17.13
