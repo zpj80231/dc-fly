@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # 批量推送Docker镜像到多台服务器
+# 单个镜像推送：docker save openjdk:8 | ssh root@192.168.1.119 "docker load"
 
 set -e
 
