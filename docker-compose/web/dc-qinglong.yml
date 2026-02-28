@@ -17,4 +17,5 @@ services:
     environment:
       - QlBaseUrl=/qinglong/
       - PublicUrl=/qinglong/
+      - TZ=Asia/Shanghai
 
