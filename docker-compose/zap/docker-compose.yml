@@ -1,0 +1,12 @@
+##
+## web 漏洞扫描
+##
+services:
+  zap:
+    image: zaproxy/zap-stable
+    container_name: zap-scanner
+    working_dir: /zap/wrk
+    volumes:
+      - ./:/zap/wrk
+    environment:
+      TZ: Asia/Shanghai

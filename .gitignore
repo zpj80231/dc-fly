@@ -103,6 +103,10 @@ fabric.properties
 hs_err_pid*
 replay_pid*
 
+# OWASP ZAP runtime plans and generated reports
+docker-compose/zap/.zap-runtime/
+docker-compose/zap/reports/
+
 ### Maven template
 target/
 pom.xml.tag
@@ -121,4 +125,3 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
-

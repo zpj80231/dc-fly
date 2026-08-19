@@ -1,0 +1,42 @@
+env:
+  contexts:
+    - name: full
+      urls:
+        - __TARGET_URL__
+      excludePaths: []
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: passiveScan-config
+    parameters:
+      enableTags: false
+      maxAlertsPerRule: 10
+
+  - type: spider
+    parameters:
+      context: full
+      url: __TARGET_URL__
+      maxDuration: 5
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 0
+
+  - type: activeScan
+    parameters:
+      context: full
+      maxScanDurationInMins: 0
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 0
+
+  - type: report
+    parameters:
+      template: __REPORT_TEMPLATE__
+      reportDir: __REPORT_DIR__
+      reportFile: report.html
+      reportTitle: DkCloud Web 漏洞扫描报告
