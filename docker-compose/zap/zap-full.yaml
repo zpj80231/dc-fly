@@ -39,5 +39,5 @@ jobs:
       template: __REPORT_TEMPLATE__
       reportDir: __REPORT_DIR__
       reportFile: report.html
-      reportTitle: Web 安全检测报告
-      reportDescription: 完整扫描结果（爬虫、被动扫描与主动扫描）
+      reportTitle: 网络安全漏洞扫描系统-安全评估报告
+      reportDescription: 基线扫描

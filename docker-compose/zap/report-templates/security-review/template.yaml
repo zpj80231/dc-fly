@@ -7,5 +7,7 @@ sections:
   - riskChart
   - alertSummary
   - alertDetails
+  - externalLinks
+  - referenceStandards
   - analysis
   - recommendations

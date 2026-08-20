@@ -20,8 +20,43 @@
 
     <section class="section" id="overview" th:if="${reportData.isIncludeSection('overview')}">
       <h2>站点概况</h2>
-      <div class="metrics">
-        <div class="metric"><div class="metric-label">漏洞总数</div><div class="metric-value" th:text="${total}">0</div></div>
+      <div class="overview-table table-wrap">
+        <table>
+          <tbody>
+            <tr>
+              <th>站点名称</th>
+              <td th:if="${reportData.sites != null and reportData.sites.size() > 0}" th:each="site : ${reportData.sites}"><span th:text="${site}">https://example.com</span></td>
+              <td th:if="${reportData.sites == null or reportData.sites.size() == 0}">未提供</td>
+              <th>当前状态</th>
+              <td>检测完成</td>
+            </tr>
+            <tr>
+              <th>站点地址</th>
+              <td th:if="${reportData.sites != null and reportData.sites.size() > 0}" th:each="site : ${reportData.sites}">
+                <span th:text="${helper.getHostForSite(site)}">example.com</span>
+                <span th:if="${helper.getPortForSite(site) > 0}" th:text="${':' + helper.getPortForSite(site)}"></span>
+              </td>
+              <td th:if="${reportData.sites == null or reportData.sites.size() == 0}">未提供</td>
+              <th>检测方式</th>
+              <td th:text="${description != null and !#strings.isEmpty(description) ? description : 'Web 应用安全检测'}">Web 应用安全检测</td>
+            </tr>
+            <tr>
+              <th>访问协议</th>
+              <td th:if="${reportData.sites != null and reportData.sites.size() > 0}" th:each="site : ${reportData.sites}" th:text="${helper.isSslSite(site) ? 'HTTPS' : 'HTTP'}">HTTPS</td>
+              <td th:if="${reportData.sites == null or reportData.sites.size() == 0}">未提供</td>
+              <th>报告时间</th>
+              <td th:text="${#dates.format(new java.util.Date(), 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 12:00:00</td>
+            </tr>
+            <tr>
+              <th>风险等级</th>
+              <td><span class="badge" th:classappend="${high > 0 ? ' risk-3' : (medium > 0 ? ' risk-2' : (low > 0 ? ' risk-1' : ' risk-0'))}" th:text="${high > 0 ? '高风险' : (medium > 0 ? '中风险' : (low > 0 ? '低风险' : '无明显风险'))}">无明显风险</span></td>
+              <th>漏洞总数</th>
+              <td th:text="${total}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="metrics overview-metrics">
         <div class="metric"><div class="metric-label">高危</div><div class="metric-value" th:text="${high}">0</div></div>
         <div class="metric"><div class="metric-label">中危</div><div class="metric-value" th:text="${medium}">0</div></div>
         <div class="metric"><div class="metric-label">低危</div><div class="metric-value" th:text="${low}">0</div></div>
@@ -90,6 +125,49 @@
           </div>
         </div>
       </article>
+    </section>
+
+    <section class="section" id="external-links" th:if="${reportData.isIncludeSection('externalLinks')}">
+      <h2>外部链接列表</h2>
+      <p class="section-note">外部链接是站点页面引用的第三方域名或资源地址。</p>
+      <div class="empty">当前报告数据未提供可遍历的外部链接明细。若需要生成域名及引用次数列表，需要在扫描阶段额外导出页面链接清单后再合并到报告。</div>
+    </section>
+
+    <section class="section" id="reference-standards" th:if="${reportData.isIncludeSection('referenceStandards')}">
+      <h2>参考标准</h2>
+      <h3>单一漏洞风险等级评定标准</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>危险程度</th><th>风险值区域</th><th>危险程度说明</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge risk-3">高</span></td><td>7 ≤ 风险值 ≤ 10</td><td>可能导致远程操作系统文件、读写后台数据库、执行任意命令或造成拒绝服务。</td></tr>
+            <tr><td><span class="badge risk-2">中</span></td><td>4 ≤ 风险值 &lt; 7</td><td>可能被利用攻击其他用户，读取系统文件或访问后台数据库。</td></tr>
+            <tr><td><span class="badge risk-1">低</span></td><td>0 ≤ 风险值 &lt; 4</td><td>可能造成信息暴露、身份冒用或其他低影响安全问题。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>站点风险等级评定标准</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>站点风险等级</th><th>风险值区域</th><th>处置建议</th></tr></thead>
+          <tbody>
+            <tr><td>非常危险</td><td>8.0 ≤ 站点风险值 ≤ 10.0</td><td>立即处置高风险问题，必要时限制外部访问。</td></tr>
+            <tr><td>比较危险</td><td>5.0 ≤ 站点风险值 &lt; 8.0</td><td>优先修复高、中风险问题，并安排复测。</td></tr>
+            <tr><td>比较安全</td><td>1.0 ≤ 站点风险值 &lt; 5.0</td><td>持续整改低风险问题，完善安全基线。</td></tr>
+            <tr><td>非常安全</td><td>0.0 ≤ 站点风险值 &lt; 1.0</td><td>保持定期检测和变更后的安全复核。</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>安全建议</h3>
+      <ol class="priority-list">
+        <li>在开发阶段落实安全编码规范，对输入校验、输出编码、身份认证和权限控制进行统一检查。</li>
+        <li>上线前完成代码审计、依赖组件检查和 Web 安全检测，发现问题后闭环整改。</li>
+        <li>上线后持续关注系统、框架和第三方组件的安全公告，及时完成补丁和版本更新。</li>
+        <li>对关键接口配置访问控制、限流、审计和异常告警，必要时增加网关或 WAF 防护。</li>
+        <li>整改后使用相同目标范围重新检测，并保留复测结果作为变更和发布依据。</li>
+      </ol>
     </section>
 
     <section class="section" id="analysis" th:if="${reportData.isIncludeSection('analysis')}">

@@ -31,9 +31,8 @@ a:hover { text-decoration: underline; }
 .page { width: min(1120px, calc(100% - 48px)); margin: 0 auto 56px; background: #fff; }
 
 .hero {
-  padding: 34px 42px 28px;
+  padding: 34px 42px 10px;
   color: var(--ink);
-  border-bottom: 3px solid var(--brand);
   background: #fff;
 }
 
@@ -47,9 +46,8 @@ a:hover { text-decoration: underline; }
 
 .section {
   margin: 0;
-  padding: 26px 32px 28px;
+  padding: 26px 32px 10px;
   border: 0;
-  border-bottom: 1px solid var(--line);
   border-radius: 0;
   background: var(--surface);
   box-shadow: none;
