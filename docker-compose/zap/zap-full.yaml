@@ -39,4 +39,5 @@ jobs:
       template: __REPORT_TEMPLATE__
       reportDir: __REPORT_DIR__
       reportFile: report.html
-      reportTitle: DkCloud Web 漏洞扫描报告
+      reportTitle: Web 安全检测报告
+      reportDescription: 完整扫描结果（爬虫、被动扫描与主动扫描）

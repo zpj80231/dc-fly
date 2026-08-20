@@ -11,7 +11,7 @@ usage() {
 
 选项：
   --config <文件>     指定 Automation Framework 模板
-  --template <名称>   报告模板，默认：traditional-html
+  --template <名称>   报告模板，默认：security-review
   --lang <locale>     报告语言，默认：zh_CN
   -h, --help          显示帮助
 
@@ -78,7 +78,7 @@ if [ "$#" -gt 0 ]; then
     esac
 fi
 
-REPORT_TEMPLATE="${ZAP_REPORT_TEMPLATE:-traditional-html}"
+REPORT_TEMPLATE="${ZAP_REPORT_TEMPLATE:-security-review}"
 REPORT_LANG="${ZAP_REPORT_LANG:-zh_CN}"
 CONFIG_FILE=""
 

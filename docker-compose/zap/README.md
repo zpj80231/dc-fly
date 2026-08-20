@@ -33,9 +33,57 @@ ZAP 的 `zap-baseline.py` 和 `zap-full-scan.py` 默认使用 Automation Framewo
 ./scan.sh https://example.com --config ./my-zap.yaml
 ```
 
-## 切换报告模板
+## 自定义中文报告模板
 
-默认模板为 `modern`：
+默认使用本项目提供的 `security-review` 模板，目录为：
+
+```text
+report-templates/security-review/
+├── template.yaml
+├── report.html
+├── Messages.properties
+├── Messages_zh_CN.properties
+└── resources/report.css
+```
+
+模板会由 Compose 只读挂载到 ZAP Home 的
+`/home/zap/.ZAP/reports/security-review`。报告包含：
+
+- 高危、中危、低危、信息类告警的横向柱状图；
+- 漏洞类型、风险级别、实例数、规则 ID、CWE、WASC 汇总；
+- URL、方法、参数、攻击载荷、证据、描述和参考资料等漏洞详情；
+- 根据风险数量自动生成的总结分析；
+- 每条 ZAP 规则自带的修复方案和报告级总体修复建议。
+
+横向柱状图使用纯 HTML/CSS 实现，不依赖公网资源或特定版本的
+Chart.js，生成的报告可以离线打开。
+
+继续定制时，各文件职责如下：
+
+- `template.yaml`：模板名称、格式和可选报告区块；
+- `report.html`：Thymeleaf 页面结构和 ZAP 数据绑定；
+- `resources/report.css`：屏幕、移动端和打印样式；
+- `Messages.properties`：模板区块的英文名称；
+- `Messages_zh_CN.properties`：模板区块的中文名称。
+
+`report.html` 中常用的数据对象：
+
+- `${alertCounts}`：按风险等级统计唯一漏洞类型；
+- `${alertTree.children}`：所有漏洞类型；
+- `${alert.children}`：同一漏洞类型的 URL 实例；
+- `${alert.userObject}`：描述、证据、修复方案、CWE、WASC 等字段；
+- `${helper}`：风险等级、置信度等本地化辅助方法。
+
+直接运行：
+
+```bash
+./scan.sh https://example.com
+./scan.sh https://example.com full
+```
+
+## 切换到其他报告模板
+
+如需临时切回 ZAP 内置模板：
 
 ```bash
 ./scan.sh https://example.com --template traditional-html
@@ -44,7 +92,7 @@ ZAP 的 `zap-baseline.py` 和 `zap-full-scan.py` 默认使用 Automation Framewo
 ./scan.sh https://example.com --template risk-confidence-html
 ```
 
-模板必须已经包含在当前 ZAP 镜像的 Reports add-on 中。模板名无效时，ZAP 会在运行计划时列出错误。
+除 `security-review` 外，模板必须已经包含在当前 ZAP 镜像的 Reports add-on 中。模板名无效时，ZAP 会在运行计划时列出错误。
 
 ## 中文报告
 
@@ -72,3 +120,13 @@ ZAP_REPORT_LANG=zh_CN \
 reports/<主机>-<扫描模式>-<时间戳>/report.html
 ```
 
+## 验证模板
+
+修改模板后运行：
+
+```bash
+sh ./test_report_template.sh
+docker compose config
+```
+
+测试会验证模板元数据、HTML 结构、离线资源、Compose 挂载、默认模板名称和中文 locale。真实报告仍建议使用一个已授权的测试目标执行 baseline 扫描确认。

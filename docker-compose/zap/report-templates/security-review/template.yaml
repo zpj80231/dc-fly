@@ -1,0 +1,11 @@
+name: Web 安全检测报告
+format: HTML
+mode: HTML
+extension: html
+sections:
+  - overview
+  - riskChart
+  - alertSummary
+  - alertDetails
+  - analysis
+  - recommendations

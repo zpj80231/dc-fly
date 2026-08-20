@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title th:text="${reportTitle}">Web 安全检测报告</title>
+  <link rel="stylesheet" th:href="${resources + '/report.css'}" href="resources/report.css" />
+</head>
+<body th:with="high=${alertCounts.get(3) == null ? 0 : alertCounts.get(3)}, medium=${alertCounts.get(2) == null ? 0 : alertCounts.get(2)}, low=${alertCounts.get(1) == null ? 0 : alertCounts.get(1)}, info=${alertCounts.get(0) == null ? 0 : alertCounts.get(0)}, total=${high + medium + low + info}">
+  <main class="page">
+    <header class="hero">
+      <div class="report-kicker">OWASP ZAP / SECURITY REVIEW</div>
+      <h1 th:text="${reportTitle}">Web 安全检测报告</h1>
+      <p class="report-description" th:if="${description != null and !#strings.isEmpty(description)}" th:text="${description}">报告说明</p>
+      <dl class="report-meta">
+        <div><dt>生成时间</dt><dd th:text="${#dates.format(new java.util.Date(), 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 12:00:00</dd></div>
+        <div><dt>ZAP 版本</dt><dd th:text="${zapVersion}">unknown</dd></div>
+        <div class="report-target" th:if="${reportData.sites != null and reportData.sites.size() > 0}"><dt>扫描目标</dt><dd><span th:each="site, state : ${reportData.sites}"><span th:text="${site}">https://example.com</span><span th:unless="${state.last}">、</span></span></dd></div>
+      </dl>
+    </header>
+
+    <section class="section" id="overview" th:if="${reportData.isIncludeSection('overview')}">
+      <h2>风险概览</h2>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">漏洞类型总数</div><div class="metric-value" th:text="${total}">0</div></div>
+        <div class="metric"><div class="metric-label">高危</div><div class="metric-value" th:text="${high}">0</div></div>
+        <div class="metric"><div class="metric-label">中危</div><div class="metric-value" th:text="${medium}">0</div></div>
+        <div class="metric"><div class="metric-label">低危</div><div class="metric-value" th:text="${low}">0</div></div>
+        <div class="metric"><div class="metric-label">信息</div><div class="metric-value" th:text="${info}">0</div></div>
+      </div>
+    </section>
+
+    <section class="section" id="risk-chart" th:if="${reportData.isIncludeSection('riskChart')}">
+      <h2>风险等级分布</h2>
+      <p class="section-note">柱长表示该风险等级在全部唯一漏洞类型中的占比。</p>
+      <div class="chart" aria-label="横向柱状图">
+        <div class="chart-row"><div class="chart-label">高危</div><div class="chart-track"><div class="chart-bar risk-3-bg" th:classappend="${high == 0 ? ' is-zero' : ''}" th:style="${'width:' + (total > 0 ? high * 100.0 / total : 0) + '%'}"></div></div><div class="chart-value" th:text="${high}">0</div></div>
+        <div class="chart-row"><div class="chart-label">中危</div><div class="chart-track"><div class="chart-bar risk-2-bg" th:classappend="${medium == 0 ? ' is-zero' : ''}" th:style="${'width:' + (total > 0 ? medium * 100.0 / total : 0) + '%'}"></div></div><div class="chart-value" th:text="${medium}">0</div></div>
+        <div class="chart-row"><div class="chart-label">低危</div><div class="chart-track"><div class="chart-bar risk-1-bg" th:classappend="${low == 0 ? ' is-zero' : ''}" th:style="${'width:' + (total > 0 ? low * 100.0 / total : 0) + '%'}"></div></div><div class="chart-value" th:text="${low}">0</div></div>
+        <div class="chart-row"><div class="chart-label">信息</div><div class="chart-track"><div class="chart-bar risk-0-bg" th:classappend="${info == 0 ? ' is-zero' : ''}" th:style="${'width:' + (total > 0 ? info * 100.0 / total : 0) + '%'}"></div></div><div class="chart-value" th:text="${info}">0</div></div>
+      </div>
+    </section>
+
+    <section class="section" id="alert-summary" th:if="${reportData.isIncludeSection('alertSummary')}">
+      <h2>漏洞列表汇总</h2>
+      <div class="empty" th:if="${alertTree.childCount == 0}">本次扫描未发现告警。</div>
+      <div class="table-wrap" th:unless="${alertTree.childCount == 0}">
+        <table>
+          <thead><tr><th>漏洞名称</th><th>风险等级</th><th>实例数</th><th>规则 ID</th><th>CWE</th><th>WASC</th></tr></thead>
+          <tbody>
+            <tr th:each="alert : ${alertTree.children}">
+              <td><a th:href="${'#plugin-' + alert.userObject.pluginId}" th:text="${alert.nodeName}">漏洞名称</a></td>
+              <td><span class="badge" th:classappend="${' risk-' + alert.risk}" th:text="${helper.getRiskString(alert.risk)}">风险</span></td>
+              <td th:text="${helper.isSystemic(alert) ? '系统性问题' : alert.childCount}">1</td>
+              <td th:text="${alert.userObject.pluginId}">10001</td>
+              <td th:text="${alert.userObject.cweId > 0 ? alert.userObject.cweId : '-'}">-</td>
+              <td th:text="${alert.userObject.wascId > 0 ? alert.userObject.wascId : '-'}">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="alert-details" th:if="${reportData.isIncludeSection('alertDetails')}">
+      <h2>漏洞详情</h2>
+      <div class="empty" th:if="${alertTree.childCount == 0}">暂无漏洞详情。</div>
+      <article class="alert" th:each="alert : ${alertTree.children}" th:id="${'plugin-' + alert.userObject.pluginId}">
+        <div class="alert-head">
+          <span class="badge" th:classappend="${' risk-' + alert.risk}" th:text="${helper.getRiskString(alert.risk)}">风险</span>
+          <h3 th:text="${alert.nodeName}">漏洞名称</h3>
+          <span th:text="${'规则 ID：' + alert.userObject.pluginId}">规则 ID</span>
+        </div>
+        <div class="alert-body">
+          <div class="field"><div class="field-name">漏洞描述</div><div class="field-value" th:text="${alert.userObject.description}">描述</div></div>
+          <div class="field" th:if="${!#strings.isEmpty(alert.userObject.otherInfo)}"><div class="field-name">补充信息</div><div class="field-value" th:text="${alert.userObject.otherInfo}">补充信息</div></div>
+          <div class="field"><div class="field-name">置信度</div><div class="field-value" th:text="${helper.getConfidenceString(alert.userObject.confidence)}">置信度</div></div>
+          <div class="field"><div class="field-name">修复建议</div><div class="field-value" th:text="${#strings.isEmpty(alert.userObject.solution) ? '请根据漏洞成因采取输入校验、输出编码、权限控制或安全配置加固，并在修复后重新扫描验证。' : alert.userObject.solution}">修复建议</div></div>
+          <div class="field" th:if="${!#strings.isEmpty(alert.userObject.reference)}"><div class="field-name">参考资料</div><div class="field-value"><div th:each="reference : ${#strings.arraySplit(alert.userObject.reference, '\n')}" th:if="${!#strings.isEmpty(reference)}"><a th:href="${reference}" th:text="${reference}">参考链接</a></div></div></div>
+          <div class="field"><div class="field-name">分类标识</div><div class="field-value"><span th:text="${alert.userObject.cweId > 0 ? 'CWE-' + alert.userObject.cweId : 'CWE：未提供'}">CWE</span><span> / </span><span th:text="${alert.userObject.wascId > 0 ? 'WASC-' + alert.userObject.wascId : 'WASC：未提供'}">WASC</span></div></div>
+
+          <h3>漏洞实例</h3>
+          <div class="empty" th:if="${helper.isSystemic(alert)}">该告警属于系统性问题，没有单独的 URL 实例。</div>
+          <div class="instance" th:each="instance, state : ${alert.children}">
+            <strong th:text="${'实例 ' + state.count}">实例 1</strong>
+            <div class="field"><div class="field-name">URL</div><div class="field-value"><a th:href="${instance.userObject.uri}" th:text="${instance.userObject.uri}">URL</a></div></div>
+            <div class="field"><div class="field-name">请求方法</div><div class="field-value" th:text="${instance.userObject.method}">GET</div></div>
+            <div class="field" th:if="${!#strings.isEmpty(instance.userObject.param)}"><div class="field-name">参数</div><div class="field-value" th:text="${instance.userObject.param}">param</div></div>
+            <div class="field" th:if="${!#strings.isEmpty(instance.userObject.attack)}"><div class="field-name">攻击载荷</div><div class="field-value" th:text="${instance.userObject.attack}">payload</div></div>
+            <div class="field" th:if="${!#strings.isEmpty(instance.userObject.evidence)}"><div class="field-name">证据</div><div class="field-value" th:text="${instance.userObject.evidence}">evidence</div></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="analysis" th:if="${reportData.isIncludeSection('analysis')}">
+      <h2>总结分析</h2>
+      <div class="analysis" th:if="${high > 0}">本次扫描发现 <strong th:text="${high}">0</strong> 类高危漏洞，同时发现 <strong th:text="${medium}">0</strong> 类中危漏洞。当前风险等级较高，攻击者可能利用高危问题获取敏感数据、绕过访问控制或影响业务可用性。建议立即确认受影响范围，必要时暂时限制公网访问或关闭相关功能，并优先修复所有高危问题。</div>
+      <div class="analysis" th:if="${high == 0 and medium > 0}">本次扫描未发现高危漏洞，但发现 <strong th:text="${medium}">0</strong> 类中危漏洞。整体风险处于中等水平，建议结合接口暴露范围与数据敏感度确认实际影响，并纳入最近一次版本迭代完成修复。</div>
+      <div class="analysis" th:if="${high == 0 and medium == 0 and low > 0}">本次扫描未发现高危或中危漏洞，但存在 <strong th:text="${low}">0</strong> 类低危问题。建议结合安全基线逐项加固，防止多个低风险配置问题组合后扩大攻击面。</div>
+      <div class="analysis" th:if="${high == 0 and medium == 0 and low == 0 and info > 0}">本次扫描仅发现信息类告警。当前未识别到明确的高、中、低危漏洞，可将这些告警作为配置优化和安全基线检查的参考。</div>
+      <div class="analysis" th:if="${total == 0}">本次扫描未发现告警。该结果仅代表本次扫描范围和规则覆盖情况，不等同于系统绝对安全；仍建议持续进行依赖治理、代码审计和定期复测。</div>
+    </section>
+
+    <section class="section" id="recommendations" th:if="${reportData.isIncludeSection('recommendations')}">
+      <h2>总体修复建议</h2>
+      <ol class="priority-list">
+        <li><strong>高危优先：</strong>立即复核高危告警，确认后实施临时访问限制、WAF 规则或功能下线等止损措施，并尽快发布修复。</li>
+        <li><strong>中危跟进：</strong>纳入近期迭代，结合身份认证、权限边界、数据敏感度判断业务影响，修复后执行针对性复测。</li>
+        <li><strong>低危与信息项加固：</strong>对响应头、Cookie 属性、错误信息、软件版本暴露等问题按安全基线统一整改。</li>
+        <li><strong>修复验证：</strong>不要只依赖告警消失；应补充单元测试或安全测试用例，并使用相同扫描范围重新扫描。</li>
+        <li><strong>人工复核：</strong>ZAP 属于自动化动态扫描工具，可能存在误报和漏报。关键系统还应结合代码审计、依赖组件扫描和人工渗透测试。</li>
+      </ol>
+    </section>
+
+    <footer class="footer">本报告由 OWASP ZAP 自动扫描结果生成，请在授权范围内使用。</footer>
+  </main>
+</body>
+</html>

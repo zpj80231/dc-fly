@@ -8,5 +8,6 @@ services:
     working_dir: /zap/wrk
     volumes:
       - ./:/zap/wrk
+      - ./report-templates/security-review:/home/zap/.ZAP/reports/security-review:ro
     environment:
       TZ: Asia/Shanghai
