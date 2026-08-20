@@ -156,6 +156,8 @@ RUNTIME_DIR="${SCRIPT_DIR}/.zap-runtime/${REPORT_NAME}"
 RUNTIME_PLAN="${RUNTIME_DIR}/zap.yaml"
 RUNTIME_PLAN_CONTAINER="/zap/wrk/.zap-runtime/${REPORT_NAME}/zap.yaml"
 REPORT_DIR_CONTAINER="/zap/wrk/reports/${REPORT_NAME}"
+HAR_FILE_CONTAINER="${REPORT_DIR_CONTAINER}/traffic.har"
+HAR_FILE="${REPORT_DIR}/traffic.har"
 
 mkdir -p "${REPORT_DIR}" "${RUNTIME_DIR}"
 chmod 0777 "${REPORT_DIR}" "${RUNTIME_DIR}"
@@ -168,11 +170,13 @@ trap cleanup EXIT HUP INT TERM
 target_yaml="$(sed_replacement "$(yaml_quote "${TARGET_URL}")")"
 report_dir_yaml="$(sed_replacement "$(yaml_quote "${REPORT_DIR_CONTAINER}")")"
 template_yaml="$(sed_replacement "$(yaml_quote "${REPORT_TEMPLATE}")")"
+har_file_yaml="$(sed_replacement "$(yaml_quote "${HAR_FILE_CONTAINER}")")"
 
 sed \
     -e "s|__TARGET_URL__|${target_yaml}|g" \
     -e "s|__REPORT_DIR__|${report_dir_yaml}|g" \
     -e "s|__REPORT_TEMPLATE__|${template_yaml}|g" \
+    -e "s|__HAR_FILE__|${har_file_yaml}|g" \
     "${CONFIG_FILE}" > "${RUNTIME_PLAN}"
 
 echo "=========================================="
@@ -199,6 +203,23 @@ set -e
 
 if [ "${SCAN_STATUS}" -ne 0 ]; then
     fail "ZAP 扫描失败，退出码：${SCAN_STATUS}"
+fi
+
+# 提取外部链接并写入报告的「外部链接列表」章节
+EXTRACTOR="${SCRIPT_DIR}/tools/external_links.py"
+if [ ! -f "${HAR_FILE}" ]; then
+    echo "提示：未找到流量导出文件 ${HAR_FILE}，跳过外部链接提取。" >&2
+elif ! command -v python3 >/dev/null 2>&1; then
+    echo "提示：未安装 python3，跳过外部链接提取。" >&2
+elif [ ! -f "${EXTRACTOR}" ]; then
+    echo "提示：缺少 ${EXTRACTOR}，跳过外部链接提取。" >&2
+else
+    python3 "${EXTRACTOR}" \
+        --har "${HAR_FILE}" \
+        --target "${TARGET_URL}" \
+        --report "${REPORT_DIR}/report.html" \
+        --json "${REPORT_DIR}/external-links.json" || \
+        echo "提示：外部链接提取未完成，报告保留占位说明。" >&2
 fi
 
 echo ""

@@ -41,3 +41,11 @@ jobs:
       reportFile: report.html
       reportTitle: 网络安全漏洞扫描系统-安全评估报告
       reportDescription: 基线扫描
+
+  # 导出流量用于提取「外部链接列表」，由 scan.sh 后处理写入报告
+  # source 必须为 all：history 只含手动/代理流量，不含爬虫生成的请求
+  - type: export
+    parameters:
+      fileName: __HAR_FILE__
+      type: har
+      source: all

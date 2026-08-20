@@ -129,8 +129,10 @@
 
     <section class="section" id="external-links" th:if="${reportData.isIncludeSection('externalLinks')}">
       <h2>外部链接列表</h2>
-      <p class="section-note">外部链接是站点页面引用的第三方域名或资源地址。</p>
-      <div class="empty">当前报告数据未提供可遍历的外部链接明细。若需要生成域名及引用次数列表，需要在扫描阶段额外导出页面链接清单后再合并到报告。</div>
+      <p class="section-note">下表汇总站点页面中引用的第三方域名及链接明细，用于评估外部资源引入带来的供应链与信息泄露风险。</p>
+      <!-- EXTERNAL_LINKS_BEGIN -->
+      <div class="empty">本次报告未生成外部链接明细：缺少流量导出文件（traffic.har）或未执行外部链接提取步骤。</div>
+      <!-- EXTERNAL_LINKS_END -->
     </section>
 
     <section class="section" id="reference-standards" th:if="${reportData.isIncludeSection('referenceStandards')}">

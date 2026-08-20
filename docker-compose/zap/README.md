@@ -52,6 +52,7 @@ report-templates/security-review/
 - 高危、中危、低危、信息类告警的横向柱状图；
 - 漏洞类型、风险级别、实例数、规则 ID、CWE、WASC 汇总；
 - URL、方法、参数、攻击载荷、证据、描述和参考资料等漏洞详情；
+- 站点页面引用的外部链接列表（域名、引用次数、引用类型、示例链接、来源页面）；
 - 根据风险数量自动生成的总结分析；
 - 每条 ZAP 规则自带的修复方案和报告级总体修复建议。
 
@@ -79,6 +80,41 @@ Chart.js，生成的报告可以离线打开。
 ```bash
 ./scan.sh https://example.com
 ./scan.sh https://example.com full
+```
+
+## 外部链接列表
+
+ZAP 的报告数据只暴露告警树和站点列表，模板本身拿不到「页面里引用了哪些第三方域名」。
+因此外部链接列表由三步拼出来：
+
+1. 扫描计划最后追加一个 `export` 任务（Import/Export add-on 提供），把本次会话的
+   HTTP 历史导出成 `reports/<目录>/traffic.har`：
+
+   ```yaml
+   - type: export
+     parameters:
+       fileName: __HAR_FILE__
+       type: har
+       source: history
+   ```
+
+   自定义计划想要这一章节时，需要保留 `__HAR_FILE__` 占位符（该占位符是可选的，
+   缺失时 `scan.sh` 不会报错，只是跳过外部链接提取）。
+
+2. `scan.sh` 在扫描结束后调用 `tools/external_links.py`，解析 HAR 中 HTML/CSS/JS
+   响应体，抽取 `a/script/link/img/iframe/form` 等标签属性、CSS `url()` 以及脚本里的
+   绝对 URL，按域名归并并剔除与目标同基础域名（含子域）的链接。
+
+3. 提取结果写入报告模板 `<!-- EXTERNAL_LINKS_BEGIN -->` 与
+   `<!-- EXTERNAL_LINKS_END -->` 之间，同时输出机器可读的
+   `reports/<目录>/external-links.json`。
+
+缺少 HAR、没装 `python3` 或未发现外部域名时，报告会保留占位说明，扫描本身不受影响。
+
+验证提取与注入逻辑（不需要 Docker）：
+
+```bash
+sh ./tools/test_external_links.sh
 ```
 
 ## 切换到其他报告模板
@@ -117,7 +153,10 @@ ZAP_REPORT_LANG=zh_CN \
 每次扫描会生成独立目录：
 
 ```text
-reports/<主机>-<扫描模式>-<时间戳>/report.html
+reports/<主机>-<扫描模式>-<时间戳>/
+├── report.html            # 安全检测报告
+├── traffic.har            # 会话流量导出（外部链接提取输入）
+└── external-links.json    # 外部链接明细
 ```
 
 ## 验证模板
@@ -125,7 +164,8 @@ reports/<主机>-<扫描模式>-<时间戳>/report.html
 修改模板后运行：
 
 ```bash
-sh ./test_report_template.sh
+sh ./test_report_branding.sh
+sh ./tools/test_external_links.sh
 docker compose config
 ```
 

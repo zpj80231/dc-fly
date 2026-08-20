@@ -10,7 +10,7 @@ if rg -n -i 'zap|owasp|zapversion|security review' "${REPORT_FILE}" >/dev/null; 
     exit 1
 fi
 
-for heading in "站点概况" "风险分类统计" "Web风险分布" "漏洞详情" "安全建议"; do
+for heading in "站点概况" "风险分类统计" "Web风险分布" "漏洞详情" "外部链接列表" "安全建议"; do
     rg -F "${heading}" "${REPORT_FILE}" >/dev/null || {
         echo "FAIL: 缺少正式报告章节：${heading}" >&2
         exit 1
