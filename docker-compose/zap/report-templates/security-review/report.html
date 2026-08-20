@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title th:text="${reportTitle}">Web 安全检测报告</title>
+  <title th:text="${reportTitle}">应用系统安全检测报告</title>
   <link rel="stylesheet" th:href="${resources + '/report.css'}" href="resources/report.css" />
 </head>
 <body th:with="high=${alertCounts.get(3) == null ? 0 : alertCounts.get(3)}, medium=${alertCounts.get(2) == null ? 0 : alertCounts.get(2)}, low=${alertCounts.get(1) == null ? 0 : alertCounts.get(1)}, info=${alertCounts.get(0) == null ? 0 : alertCounts.get(0)}, total=${high + medium + low + info}">
   <main class="page">
     <header class="hero">
-      <div class="report-kicker">OWASP ZAP / SECURITY REVIEW</div>
-      <h1 th:text="${reportTitle}">Web 安全检测报告</h1>
+      <div class="report-kicker">应用系统安全检测报告</div>
+      <h1 th:text="${reportTitle}">应用系统安全检测报告</h1>
       <p class="report-description" th:if="${description != null and !#strings.isEmpty(description)}" th:text="${description}">报告说明</p>
       <dl class="report-meta">
         <div><dt>生成时间</dt><dd th:text="${#dates.format(new java.util.Date(), 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 12:00:00</dd></div>
-        <div><dt>ZAP 版本</dt><dd th:text="${zapVersion}">unknown</dd></div>
         <div class="report-target" th:if="${reportData.sites != null and reportData.sites.size() > 0}"><dt>扫描目标</dt><dd><span th:each="site, state : ${reportData.sites}"><span th:text="${site}">https://example.com</span><span th:unless="${state.last}">、</span></span></dd></div>
       </dl>
     </header>
 
     <section class="section" id="overview" th:if="${reportData.isIncludeSection('overview')}">
-      <h2>风险概览</h2>
+      <h2>站点概况</h2>
       <div class="metrics">
-        <div class="metric"><div class="metric-label">漏洞类型总数</div><div class="metric-value" th:text="${total}">0</div></div>
+        <div class="metric"><div class="metric-label">漏洞总数</div><div class="metric-value" th:text="${total}">0</div></div>
         <div class="metric"><div class="metric-label">高危</div><div class="metric-value" th:text="${high}">0</div></div>
         <div class="metric"><div class="metric-label">中危</div><div class="metric-value" th:text="${medium}">0</div></div>
         <div class="metric"><div class="metric-label">低危</div><div class="metric-value" th:text="${low}">0</div></div>
@@ -31,8 +30,8 @@
     </section>
 
     <section class="section" id="risk-chart" th:if="${reportData.isIncludeSection('riskChart')}">
-      <h2>风险等级分布</h2>
-      <p class="section-note">柱长表示该风险等级在全部唯一漏洞类型中的占比。</p>
+      <h2>风险分类统计</h2>
+      <p class="section-note">横向柱状图按风险等级展示本次检测发现的漏洞数量。</p>
       <div class="chart" aria-label="横向柱状图">
         <div class="chart-row"><div class="chart-label">高危</div><div class="chart-track"><div class="chart-bar risk-3-bg" th:classappend="${high == 0 ? ' is-zero' : ''}" th:style="${'width:' + (total > 0 ? high * 100.0 / total : 0) + '%'}"></div></div><div class="chart-value" th:text="${high}">0</div></div>
         <div class="chart-row"><div class="chart-label">中危</div><div class="chart-track"><div class="chart-bar risk-2-bg" th:classappend="${medium == 0 ? ' is-zero' : ''}" th:style="${'width:' + (total > 0 ? medium * 100.0 / total : 0) + '%'}"></div></div><div class="chart-value" th:text="${medium}">0</div></div>
@@ -42,7 +41,8 @@
     </section>
 
     <section class="section" id="alert-summary" th:if="${reportData.isIncludeSection('alertSummary')}">
-      <h2>漏洞列表汇总</h2>
+      <h2>Web风险分布</h2>
+      <h3>漏洞列表汇总</h3>
       <div class="empty" th:if="${alertTree.childCount == 0}">本次扫描未发现告警。</div>
       <div class="table-wrap" th:unless="${alertTree.childCount == 0}">
         <table>
@@ -68,7 +68,7 @@
         <div class="alert-head">
           <span class="badge" th:classappend="${' risk-' + alert.risk}" th:text="${helper.getRiskString(alert.risk)}">风险</span>
           <h3 th:text="${alert.nodeName}">漏洞名称</h3>
-          <span th:text="${'规则 ID：' + alert.userObject.pluginId}">规则 ID</span>
+          <span th:text="${'编号：' + alert.userObject.pluginId}">编号</span>
         </div>
         <div class="alert-body">
           <div class="field"><div class="field-name">漏洞描述</div><div class="field-value" th:text="${alert.userObject.description}">描述</div></div>
@@ -102,17 +102,17 @@
     </section>
 
     <section class="section" id="recommendations" th:if="${reportData.isIncludeSection('recommendations')}">
-      <h2>总体修复建议</h2>
+      <h2>安全建议</h2>
       <ol class="priority-list">
         <li><strong>高危优先：</strong>立即复核高危告警，确认后实施临时访问限制、WAF 规则或功能下线等止损措施，并尽快发布修复。</li>
         <li><strong>中危跟进：</strong>纳入近期迭代，结合身份认证、权限边界、数据敏感度判断业务影响，修复后执行针对性复测。</li>
         <li><strong>低危与信息项加固：</strong>对响应头、Cookie 属性、错误信息、软件版本暴露等问题按安全基线统一整改。</li>
         <li><strong>修复验证：</strong>不要只依赖告警消失；应补充单元测试或安全测试用例，并使用相同扫描范围重新扫描。</li>
-        <li><strong>人工复核：</strong>ZAP 属于自动化动态扫描工具，可能存在误报和漏报。关键系统还应结合代码审计、依赖组件扫描和人工渗透测试。</li>
+        <li><strong>复核确认：</strong>自动化检测结果可能存在误报或漏报，关键系统应结合代码审计、依赖组件检查和人工复核。</li>
       </ol>
     </section>
 
-    <footer class="footer">本报告由 OWASP ZAP 自动扫描结果生成，请在授权范围内使用。</footer>
+    <footer class="footer">本报告仅用于本次授权安全检测，请结合业务实际情况进行复核和整改。</footer>
   </main>
 </body>
 </html>
