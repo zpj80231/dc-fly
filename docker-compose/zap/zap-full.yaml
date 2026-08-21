@@ -1,38 +1,89 @@
 env:
+  # Context 定义扫描边界；外部域名只作为页面引用记录，不会继续深入扫描。
   contexts:
     - name: full
       urls:
         - __TARGET_URL__
       excludePaths: []
   parameters:
+    # 扫描阶段出错时终止计划；发现告警不会导致计划失败。
     failOnError: true
     failOnWarning: false
+    # 将 Automation Framework 进度输出到终端，方便判断爬虫是否仍在运行。
     progressToStdout: true
 
 jobs:
   - type: passiveScan-config
     parameters:
+      # 保留所有被动扫描规则。
       enableTags: false
+      # 每条规则最多保留 10 个实例，兼顾覆盖面与报告体积。
       maxAlertsPerRule: 10
 
   - type: spider
     parameters:
+      # 传统 Spider 快速发现 HTML、静态资源、robots.txt 和 sitemap.xml 链接。
       context: full
       url: __TARGET_URL__
-      maxDuration: 5
+      maxDuration: 15
+      # 不限制目录深度，实际范围仍受 Context 和时间上限控制。
+      maxDepth: 0
+      # 保留不同查询参数的 URL，尽量覆盖参数化接口。
+      handleParameters: use_all
+      # 保留表单入口并允许提交 POST 表单，以发现隐藏的业务 URL。
+      processForm: true
+      postForm: true
+      # 避免爬虫点击常见退出登录路径。
+      logoutAvoidance: true
+      # 允许解析更大的前端构建文件，避免漏掉其中的接口和资源 URL。
+      maxParseSizeBytes: 10485760
+      # 从常见版本控制元数据中继续发现 URL，提高站点清单覆盖率。
+      parseGit: true
+      parseDsStore: true
+      parseSVNEntries: true
 
   - type: passiveScan-wait
     parameters:
-      maxDuration: 0
+      maxDuration: 15
+
+  - type: spiderAjax
+    parameters:
+      # Ajax Spider 使用无头浏览器发现 JavaScript 动态路由和按钮触发页面。
+      context: full
+      url: __TARGET_URL__
+      # 绿盟扫描耗时约 10 分钟；Ajax Spider 也给出 10 分钟窗口。
+      maxDuration: 10
+      # 不限制状态深度，实际范围仍受 Context 和时间上限控制。
+      maxCrawlDepth: 0
+      # 单浏览器降低 Docker 内存压力；增大该值会更快但更耗资源。
+      numberOfBrowsers: 1
+      runOnlyIfModern: false
+      inScopeOnly: true
+      browserId: firefox-headless
+      clickDefaultElems: true
+      clickElemsOnce: true
+      # 不随机填写表单，避免产生业务副作用；仍会点击默认元素。
+      randomInputs: false
+      eventWait: 1000
+      reloadWait: 1000
+      maxCrawlStates: 0
+      logoutAvoidance: true
+
+  - type: passiveScan-wait
+    parameters:
+      # 等待 Ajax Spider 发现的响应完成被动扫描后再主动扫描。
+      maxDuration: 15
 
   - type: activeScan
     parameters:
+      # full 模式才发送主动攻击载荷；仅对已获授权目标使用。
       context: full
-      maxScanDurationInMins: 0
+      maxScanDurationInMins: 5
 
   - type: passiveScan-wait
     parameters:
-      maxDuration: 0
+      # 等待主动扫描产生的响应完成被动扫描后再生成报告。
+      maxDuration: 15
 
   - type: report
     parameters:
@@ -40,10 +91,10 @@ jobs:
       reportDir: __REPORT_DIR__
       reportFile: report.html
       reportTitle: 网络安全漏洞扫描系统-安全评估报告
-      reportDescription: 基线扫描
+      reportDescription: 全量扫描
 
   # 导出流量用于提取「外部链接列表」，由 scan.sh 后处理写入报告
-  # source 必须为 all：history 只含手动/代理流量，不含爬虫生成的请求
+  # source 使用 all，确保包含传统 Spider、Ajax Spider 和扫描任务产生的请求
   - type: export
     parameters:
       fileName: __HAR_FILE__

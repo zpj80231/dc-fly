@@ -13,7 +13,7 @@
       <h1 th:text="${reportTitle}">应用系统安全检测报告</h1>
       <p class="report-description" th:if="${description != null and !#strings.isEmpty(description)}" th:text="${description}">报告说明</p>
       <dl class="report-meta">
-        <div><dt>生成时间</dt><dd th:text="${#dates.format(new java.util.Date(), 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 12:00:00</dd></div>
+        <div><dt>生成时间</dt><dd th:text="${generatedString}">2026-01-01 12:00:00</dd></div>
         <div class="report-target" th:if="${reportData.sites != null and reportData.sites.size() > 0}"><dt>扫描目标</dt><dd><span th:each="site, state : ${reportData.sites}"><span th:text="${site}">https://example.com</span><span th:unless="${state.last}">、</span></span></dd></div>
       </dl>
     </header>
@@ -45,7 +45,7 @@
               <td th:if="${reportData.sites != null and reportData.sites.size() > 0}" th:each="site : ${reportData.sites}" th:text="${helper.isSslSite(site) ? 'HTTPS' : 'HTTP'}">HTTPS</td>
               <td th:if="${reportData.sites == null or reportData.sites.size() == 0}">未提供</td>
               <th>报告时间</th>
-              <td th:text="${#dates.format(new java.util.Date(), 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 12:00:00</td>
+              <td th:text="${generatedString}">2026-01-01 12:00:00</td>
             </tr>
             <tr>
               <th>风险等级</th>

@@ -12,6 +12,17 @@
 
 `baseline` 运行爬虫和被动扫描，`full` 还会运行主动扫描。主动扫描会向目标发送攻击载荷，只应对已获授权的目标使用。
 
+默认扫描计划为了尽量接近整站扫描工具的覆盖范围，会依次执行：
+
+1. 传统 Spider，最多运行 15 分钟，负责快速发现普通 HTML、静态资源、robots.txt 和 sitemap.xml 链接；
+2. Ajax Spider，最多运行 10 分钟，使用无头浏览器发现 JavaScript 动态路由和默认可点击元素；
+3. 等待所有已发现响应完成被动扫描；
+4. `full` 模式再对当前 Context 内已发现的 URL 执行主动扫描。
+
+Spider 的时间上限不是 URL 数量保证。实际数量还取决于入口页面、登录状态、链接是否由前端动态生成、Context 范围、站点响应速度和 robots/排除规则。要与其他工具进行有效对比，应使用相同目标、相同认证状态、相同时间窗口，并确认扫描链接数后再比较漏洞数量。
+
+默认计划不会自动登录业务系统，也不会随机填写表单；需要覆盖登录后页面时，应在 Context 中配置认证和用户，或提供经过授权的入口流量。对于需要登录的系统，仅延长 Spider 时间不能替代认证配置。
+
 ## 配置不会再被覆盖
 
 ZAP 的 `zap-baseline.py` 和 `zap-full-scan.py` 默认使用 Automation Framework，并会把动态生成的计划复制成挂载目录中的 `zap.yaml`。本脚本不再调用这两个 packaged scan，而是：
@@ -95,7 +106,7 @@ ZAP 的报告数据只暴露告警树和站点列表，模板本身拿不到「�
      parameters:
        fileName: __HAR_FILE__
        type: har
-       source: history
+       source: all
    ```
 
    自定义计划想要这一章节时，需要保留 `__HAR_FILE__` 占位符（该占位符是可选的，
@@ -109,7 +120,7 @@ ZAP 的报告数据只暴露告警树和站点列表，模板本身拿不到「�
    `<!-- EXTERNAL_LINKS_END -->` 之间，同时输出机器可读的
    `reports/<目录>/external-links.json`。
 
-缺少 HAR、没装 `python3` 或未发现外部域名时，报告会保留占位说明，扫描本身不受影响。
+`source: all` 会包含 Spider、Ajax Spider 和其他扫描任务产生的流量；`history` 只适合导出部分 HTTP 历史，可能遗漏爬虫请求。缺少 HAR、没装 `python3` 或未发现外部域名时，报告会保留占位说明，扫描本身不受影响。
 
 验证提取与注入逻辑（不需要 Docker）：
 
@@ -165,6 +176,7 @@ reports/<主机>-<扫描模式>-<时间戳>/
 
 ```bash
 sh ./test_report_branding.sh
+sh ./test_scan_configuration.sh
 sh ./tools/test_external_links.sh
 docker compose config
 ```
