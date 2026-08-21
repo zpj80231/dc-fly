@@ -6,6 +6,8 @@ services:
     image: zaproxy/zap-stable
     container_name: zap-scanner
     working_dir: /zap/wrk
+    # 无头浏览器（Ajax Spider）默认只有 64MB /dev/shm 会崩溃，加大共享内存。
+    shm_size: "2gb"
     volumes:
       - ./:/zap/wrk
       - ./report-templates/security-review:/home/zap/.ZAP/reports/security-review:ro

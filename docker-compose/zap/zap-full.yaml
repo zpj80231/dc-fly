@@ -6,8 +6,9 @@ env:
         - __TARGET_URL__
       excludePaths: []
   parameters:
-    # 扫描阶段出错时终止计划；发现告警不会导致计划失败。
-    failOnError: true
+    # Ajax Spider 等脆弱步骤出错时不终止整个计划，保证 report/export 仍会执行；
+    # 每个 job 的成败仍通过 progressToStdout 打印，错误不会被静默吞掉。
+    failOnError: false
     failOnWarning: false
     # 将 Automation Framework 进度输出到终端，方便判断爬虫是否仍在运行。
     progressToStdout: true
